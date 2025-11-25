@@ -22,10 +22,9 @@ mongoose
 //  Test Route (GET)
 // ===============================
 app.get("/", (req, res) => {
-  res.send("Portfolio Server is Running ✔");
+  res.send("Portfolio Server Running ✔");
 });
 
-// Check API route
 app.get("/api/contact", (req, res) => {
   res.send("Contact API Working ✔ (POST method required)");
 });
