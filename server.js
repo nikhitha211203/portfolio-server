@@ -7,10 +7,23 @@ const Contact = require("./models/Contact");
 
 const app = express();
 app.use(cors());
+// ===============================
+//  Middleware
+// ===============================
 app.use(express.json());
+app.use(require('cookie-parser')());
 
 // ===============================
-//  MongoDB Connect
+//  Routes
+// ===============================
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/skills', require('./routes/skillRoutes'));
+app.use('/api/about', require('./routes/aboutRoutes'));
+app.use('/api/contact', require('./routes/contactRoutes'));
+
+// ===============================
+//  MongoDB Connectcd
 // ===============================
 mongoose
   .connect(process.env.MONGO_URI)
@@ -24,33 +37,6 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Portfolio Server Running ✔");
 });
-
-app.get("/api/contact", (req, res) => {
-  res.send("Contact API Working ✔ (POST method required)");
-});
-
-
-// ===============================
-//  Contact API Route (POST)
-// ===============================
-app.post("/api/contact", async (req, res) => {
-  try {
-    const contactData = new Contact(req.body);
-    await contactData.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Message Saved Successfully!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error saving message!",
-      error: error.message,
-    });
-  }
-});
-
 
 // ===============================
 //  Start Server
