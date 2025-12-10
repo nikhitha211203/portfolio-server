@@ -6,7 +6,10 @@ require("dotenv").config();
 const Contact = require("./models/Contact");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000", "https://nikhitha-admin.vercel.app"],
+  credentials: true
+}));
 // ===============================
 //  Middleware
 // ===============================
