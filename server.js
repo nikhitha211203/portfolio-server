@@ -3,6 +3,18 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
+// Debugging Environment
+console.log("--- Server Environment Check ---");
+console.log("PORT:", process.env.PORT);
+console.log("MONGO_URI is set:", !!process.env.MONGO_URI);
+console.log("JWT_SECRET is set:", !!process.env.JWT_SECRET);
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("--------------------------------");
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is missing! Authentication will fail.");
+}
+
 const Contact = require("./models/Contact");
 
 const app = express();
