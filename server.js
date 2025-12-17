@@ -1,60 +1,90 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
-
-const Contact = require("./models/Contact");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
+const path = require("path");
+const cookieParser = require("cookie-parser");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 // ===============================
-//  MongoDB Connect
+//  Debugging Environment
+// ===============================
+console.log("--- Server Environment Check ---");
+console.log("PORT:", process.env.PORT);
+console.log("MONGO_URI is set:", !!process.env.MONGO_URI);
+console.log("JWT_SECRET is set:", !!process.env.JWT_SECRET);
+if (process.env.JWT_SECRET) {
+  console.log("JWT_SECRET length:", process.env.JWT_SECRET.length);
+}
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("--------------------------------");
+
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET is missing!");
+}
+
+// ===============================
+//  App Init
+// ===============================
+const app = express();
+
+// ===============================
+//  Global Error Handlers
+// ===============================
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION:", reason);
+  process.exit(1);
+});
+
+// ===============================
+//  Middleware
+// ===============================
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://nikhitha-admin.vercel.app",
+      "https://portfolio-nikhitha-kappa.vercel.app",
+    ],
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+app.use(cookieParser());
+
+// ===============================
+//  API Routes
+// ===============================
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/projects", require("./routes/projectRoutes"));
+app.use("/api/skills", require("./routes/skillRoutes"));
+app.use("/api/about", require("./routes/aboutRoutes"));
+app.use("/api/contact", require("./routes/contactRoutes"));
+
+// ===============================
+//  MongoDB Connection
 // ===============================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected Successfully!"))
-  .catch((err) => console.log("MongoDB Error:", err));
-
+  .catch((err) => console.error("MongoDB Error:", err));
 
 // ===============================
-//  Test Route (GET)
+//  Root Route (Health Check)
 // ===============================
 app.get("/", (req, res) => {
-  res.send("Portfolio Server Running ✔");
+  res.send("API is running successfully!");
 });
-
-app.get("/api/contact", (req, res) => {
-  res.send("Contact API Working ✔ (POST method required)");
-});
-
-
-// ===============================
-//  Contact API Route (POST)
-// ===============================
-app.post("/api/contact", async (req, res) => {
-  try {
-    const contactData = new Contact(req.body);
-    await contactData.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Message Saved Successfully!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error saving message!",
-      error: error.message,
-    });
-  }
-});
-
 
 // ===============================
 //  Start Server
 // ===============================
-// Use Render PORT or local 5000
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
